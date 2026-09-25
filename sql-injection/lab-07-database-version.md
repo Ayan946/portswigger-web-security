@@ -1,41 +1,47 @@
-# Lab 07: SQL Injection – Querying the Database Type and Version
+# SQL injection UNION attack, retrieving data from other tables
 
-## Lab Description
-This lab demonstrates a SQL injection vulnerability that allows an attacker to determine the underlying database type and version.
-Identifying the database technology is an important step for tailoring further attacks and understanding platform-specific behavior.
+## 1. Vulnerability
 
-## Vulnerability Type
-- SQL Injection
-- Information Disclosure
+**SQL Injection — UNION Data Extraction**
 
-## Affected Functionality
-- Product listing page using a backend SQL query
+The product category parameter allows an attacker to use a UNION query to retrieve data from tables that are not part of the application's intended query.
 
-## Root Cause
-The application directly incorporates user input into SQL queries without proper parameterization.
-This allows attackers to inject database-specific queries that reveal internal system information.
+## 2. Objective
 
-## Exploitation Summary (High Level)
-- The application executes user-influenced SQL queries.
-- By injecting database-specific functions or metadata queries, it is possible to identify the database type and version.
-- The response confirms the backend database technology in use.
+Retrieve usernames and passwords from the `users` table and use them to log in as `administrator`.
 
-*(Exact payloads are omitted to keep this write-up responsible and educational.)*
+## 3. Exploitation
 
-## Impact
-- Disclosure of database technology and version
-- Enables attackers to craft database-specific exploits
-- Increases the likelihood of successful follow-up attacks
+1. Intercept the product category request using Burp Suite.
+2. Determine that the query returns two text-compatible columns:
 
-## Remediation
-- Use parameterized queries for all database interactions
-- Restrict access to database metadata
-- Validate and sanitize all user inputs
-- Suppress detailed database error messages in production
+`'+UNION+SELECT+'abc','def'--`
 
-## Key Takeaway
-Information disclosure through SQL injection significantly lowers the barrier for attackers.
-Knowing the database type and version allows attackers to optimize and scale further exploitation.
+3. Query the `users` table:
 
-## Lab Status
-✅ Completed
+`'+UNION+SELECT+username,+password+FROM+users--`
+
+4. The response reveals the usernames and passwords.
+5. Use the `administrator` credentials to log in.
+6. Lab solved.
+
+## 4. Impact
+
+UNION-based SQL injection can allow attackers to:
+
+* Retrieve data from other database tables.
+* Expose usernames and passwords.
+* Access privileged accounts.
+* Extract sensitive application data.
+
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Apply least-privilege database permissions.
+* Store passwords securely using strong password hashing.
+* Never expose database contents through application responses.
+
+## 6. Key Takeaway
+
+**A UNION SQL injection can turn a restricted query into a mechanism for extracting data from other database tables.**
+
