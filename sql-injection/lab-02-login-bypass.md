@@ -1,41 +1,43 @@
-# Lab 02: SQL Injection Vulnerability Allowing Login Bypass
+# SQL injection vulnerability allowing login bypass
 
-## Lab Description
-This lab contains a SQL injection vulnerability in the login functionality.
-The application uses user-supplied input directly in a SQL query without proper sanitization, allowing an attacker to bypass authentication.
+## 1. Vulnerability
 
-## Vulnerability Type
-- SQL Injection
-- Authentication Bypass
+**SQL Injection in Login Function**
 
-## Affected Functionality
-- Login form (username and password fields)
+The login function directly incorporates the username into a SQL query, allowing an attacker to manipulate the query and bypass password verification.
 
-## Root Cause
-The backend SQL query is constructed by directly concatenating user input into the query.
-Because of this, crafted input can alter the logic of the SQL statement and force it to return a valid result without knowing valid credentials.
+## 2. Objective
 
-## Exploitation Summary (High Level)
-- The application checks credentials using a SQL query.
-- By injecting a logical condition that always evaluates to true, authentication checks are bypassed.
-- This allows access without valid username or password.
+Use SQL injection to log in as the `administrator` user without knowing the password.
 
-(No exploit payloads are included to keep this write-up educational and responsible.)
+## 3. Exploitation
 
-## Impact
-- Unauthorized access to user accounts
-- Complete authentication bypass
-- Potential exposure of sensitive user data
+1. Intercept the login request using Burp Suite.
+2. Modify the `username` parameter to:
 
-## Remediation
-- Use parameterized queries (prepared statements)
-- Avoid dynamic SQL query construction using user input
-- Implement proper input validation and escaping
-- Apply least-privilege principles to database users
+`administrator'--`
 
-## Key Takeaway
-Authentication mechanisms are a common and high-impact attack surface.
-Even simple SQL injection vulnerabilities can completely break access control if input handling is insecure.
+3. The `'` closes the username string and `--` comments out the rest of the SQL query, including the password check.
+4. Send the request and the application logs in as `administrator`.
+5. Lab solved.
 
-## Lab Status
-✅ Completed
+## 4. Impact
+
+SQL injection in authentication functionality can allow attackers to:
+
+* Bypass login controls.
+* Access other users' accounts.
+* Potentially gain administrative access.
+* Retrieve or modify sensitive data.
+
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Never build authentication queries using string concatenation.
+* Implement proper server-side authentication and authorization.
+* Use least-privileged database accounts.
+
+## 6. Key Takeaway
+
+**A SQL injection vulnerability in a login function can completely bypass authentication if user input is directly incorporated into the query.**
+
