@@ -1,45 +1,43 @@
-# SQL Injection – WHERE Clause (Retrieval of Hidden Data)
+# SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
 
-## Vulnerability Type
-SQL Injection
+## 1. Vulnerability
 
-## Lab Objective
-Exploit a SQL injection vulnerability in the WHERE clause to retrieve hidden data that is not normally visible to users.
+**SQL Injection in WHERE Clause**
 
-## Root Cause
-The application directly included user-controlled input in a SQL WHERE clause without proper validation or parameterized queries.
+The product category parameter is incorporated into a SQL query without proper sanitization. This allows an attacker to modify the query's logic and retrieve products that are normally hidden.
 
-Because of this, an attacker could manipulate the query logic executed by the database.
+## 2. Objective
 
-## What Went Wrong (High-Level)
-The application assumed that user input would only filter existing data.  
-Instead, crafted input altered the condition of the WHERE clause, causing the database to return unintended results.
+Use SQL injection to display one or more unreleased products.
 
-## Security Impact
-An attacker could:
-- Access hidden or restricted data
-- Bypass intended data filtering logic
-- Expose sensitive business or user information
+## 3. Exploitation
 
-This vulnerability can lead to unauthorized data disclosure.
+1. Intercept the product category request using Burp Suite.
+2. Modify the `category` parameter with:
 
-## How the Issue Was Identified
-By modifying input that affected the WHERE clause and observing changes in the application’s response, it became clear that the backend query logic was being altered.
+`'+OR+1=1--`
 
-This behavior confirmed the presence of a SQL injection vulnerability.
+3. The payload makes the `WHERE` condition always true and comments out the remaining query.
+4. Send the request and verify that unreleased products are now displayed.
+5. Lab solved.
 
-## Mitigation / How to Fix
-- Use parameterized queries (prepared statements) for all database interactions
-- Avoid constructing SQL queries using string concatenation
-- Enforce strict server-side input validation
-- Apply least-privilege permissions to database users
+## 4. Impact
 
-## Key Takeaway
-Filtering data using user input is risky if proper safeguards are not in place.  
-SQL injection can occur even in simple WHERE clauses when input is not handled securely.
+SQL injection can allow attackers to:
 
----
+* Retrieve unauthorized data.
+* Bypass application logic.
+* Modify or delete database information.
+* Potentially compromise backend functionality.
 
-*Lab Source:* PortSwigger Web Security Academy  
-*Lab Name:* SQL injection vulnerability in WHERE clause allowing retrieval of hidden data  
-*Level:* Apprentice
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Never concatenate user input directly into SQL queries.
+* Apply appropriate input validation.
+* Use least-privileged database accounts.
+
+## 6. Key Takeaway
+
+**SQL injection allows attacker-controlled input to alter the logic of a database query.**
+
