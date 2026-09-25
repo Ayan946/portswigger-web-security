@@ -1,42 +1,45 @@
-# Lab 06: SQL Injection UNION Attack – Retrieving Multiple Values in a Single Column
+# SQL injection UNION attack, finding a column containing text
 
-## Lab Description
-This lab demonstrates a UNION-based SQL injection vulnerability where multiple database values must be extracted through a single visible column.
-The objective is to combine multiple fields into one output column to retrieve meaningful data.
+## 1. Vulnerability
 
-## Vulnerability Type
-- SQL Injection
-- UNION-based Injection
-- Information Disclosure
+**SQL Injection — UNION Data Type Enumeration**
 
-## Affected Functionality
-- Product listing page backed by a SQL query
+The application is vulnerable to UNION-based SQL injection, allowing an attacker to determine which returned columns can contain string data.
 
-## Root Cause
-The application constructs SQL queries using unsanitized user input.
-Because of this, UNION queries can be injected and manipulated to merge multiple database values into a single column displayed in the response.
+## 2. Objective
 
-## Exploitation Summary (High Level)
-- The original query returns only one column capable of displaying text.
-- Multiple database values are concatenated into that single column.
-- The combined output is rendered in the application response, confirming successful data extraction.
+Identify a column that accepts text data and use it to display the lab's provided random value.
 
-*(Specific payloads are intentionally omitted for ethical documentation.)*
+## 3. Exploitation
 
-## Impact
-- Exposure of sensitive database records
-- Increased risk of credential disclosure
-- Enables full data extraction despite limited output channels
+1. Intercept the product category request using Burp Suite.
+2. Determine that the query returns three columns:
 
-## Remediation
-- Use parameterized queries for all database interactions
-- Apply strict input validation
-- Limit database permissions to only what is required
-- Avoid directly reflecting database output to users
+`'+UNION+SELECT+NULL,NULL,NULL--`
 
-## Key Takeaway
-Even when an application restricts visible output to a single column, SQL injection can still be used to extract multiple values.
-Defensive coding practices must be consistent across all query logic.
+3. Replace each `NULL` with the random value provided by the lab, one at a time. For example:
 
-## Lab Status
-✅ Completed
+`'+UNION+SELECT+'abcdef',NULL,NULL--`
+
+4. If an error occurs, test the next column.
+5. The column that successfully displays the value is compatible with string data.
+6. Lab solved.
+
+## 4. Impact
+
+Identifying compatible columns allows attackers to:
+
+* Determine where sensitive data can be extracted.
+* Construct effective UNION attacks.
+* Retrieve information from other database tables.
+
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Prevent user input from altering SQL query structure.
+* Apply proper server-side input handling.
+
+## 6. Key Takeaway
+
+**UNION attacks require matching the number and data types of the original query's columns.**
+
