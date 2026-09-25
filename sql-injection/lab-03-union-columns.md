@@ -1,41 +1,47 @@
-# Lab 03: SQL Injection UNION Attack – Determining the Number of Columns
 
-## Lab Description
-This lab demonstrates a SQL injection vulnerability that allows the use of a UNION-based attack.
-The objective is to determine the number of columns returned by the original SQL query in order to prepare further UNION attacks.
+# SQL injection attack, querying the database type and version on MySQL and Microsoft
 
-## Vulnerability Type
-- SQL Injection
-- UNION-based Injection
+## 1. Vulnerability
 
-## Affected Functionality
-- Product listing page using a database-backed query
+**SQL Injection — UNION Attack**
 
-## Root Cause
-The application directly incorporates user input into a SQL query without proper sanitization or parameterization.
-This allows attackers to manipulate the query structure using SQL keywords such as UNION.
+The product category parameter is vulnerable to SQL injection, allowing additional queries to be combined with the original query using `UNION`.
 
-## Exploitation Summary (High Level)
-- The original SQL query returns a fixed number of columns.
-- By injecting UNION SELECT statements and adjusting the number of selected columns, it is possible to infer how many columns the query returns.
-- Once the correct column count is identified, UNION-based SQL injection becomes possible.
+## 2. Objective
 
-(Specific payloads are intentionally omitted for responsible disclosure.)
+Determine the database type and retrieve its version string.
 
-## Impact
-- Enables further data extraction attacks
-- Acts as a stepping stone for full database compromise
-- Can lead to exposure of sensitive application data
+## 3. Exploitation
 
-## Remediation
-- Use parameterized queries (prepared statements)
-- Avoid building SQL queries through string concatenation
-- Implement strict server-side input validation
-- Disable verbose database error messages in production
+1. Intercept the product category request using Burp Suite.
+2. Determine the number of columns and identify columns that support text. In this lab, there are two text-compatible columns.
+3. Confirm this with:
 
-## Key Takeaway
-Determining the number of columns is a critical reconnaissance step in UNION-based SQL injection attacks.
-Small input validation flaws can enable attackers to fully control database queries.
+`'+UNION+SELECT+'abc','def'#`
 
-## Lab Status
-✅ Completed
+4. Retrieve the database version using:
+
+`'+UNION+SELECT+@@version,+NULL#`
+
+5. The response reveals the database version.
+6. Lab solved.
+
+## 4. Impact
+
+SQL injection can allow attackers to:
+
+* Identify database technologies and versions.
+* Retrieve sensitive information.
+* Enumerate the database structure.
+* Build further targeted attacks.
+
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Never concatenate user input into SQL queries.
+* Restrict database permissions.
+* Avoid exposing unnecessary database information.
+
+## 6. Key Takeaway
+
+**Database version information can help an attacker understand the target and select appropriate follow-up techniques.**
