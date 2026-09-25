@@ -1,42 +1,47 @@
-# Lab 08: SQL Injection – Listing Database Contents
+# SQL injection UNION attack, retrieving multiple values in a single column
 
-## Lab Description
-This lab demonstrates a SQL injection vulnerability that allows enumeration of database contents.
-The objective is to identify existing tables and columns within the database using SQL injection techniques.
+## 1. Vulnerability
 
-## Vulnerability Type
-- SQL Injection
-- Information Disclosure
-- Database Enumeration
+**SQL Injection — UNION Data Concatenation**
 
-## Affected Functionality
-- Product listing page backed by a SQL database
+The application is vulnerable to UNION-based SQL injection, and only one of the returned columns is suitable for text. Multiple database values can therefore be combined into a single output column.
 
-## Root Cause
-The application dynamically builds SQL queries using unsanitized user input.
-This allows attackers to access database metadata and enumerate internal database structures.
+## 2. Objective
 
-## Exploitation Summary (High Level)
-- The attacker leverages SQL injection to query database metadata.
-- Table names and column names are identified from system catalog information.
-- The application response confirms the existence of internal database structures.
+Retrieve usernames and passwords from the `users` table when only one column can display text.
 
-*(Specific SQL payloads are intentionally omitted for ethical documentation.)*
+## 3. Exploitation
 
-## Impact
-- Exposure of internal database structure
-- Enables targeted data extraction attacks
-- Increases risk of sensitive data compromise
+1. Intercept the product category request using Burp Suite.
+2. Determine that the query returns two columns and only the second accepts text:
 
-## Remediation
-- Use prepared statements and parameterized queries
-- Restrict database metadata access
-- Implement strict input validation
-- Apply least-privilege principles to database users
+`'+UNION+SELECT+NULL,'abc'--`
 
-## Key Takeaway
-Database enumeration is a critical step in SQL injection attacks.
-Once attackers understand the structure of the database, sensitive data becomes significantly easier to extract.
+3. Concatenate the username and password into the same column:
 
-## Lab Status
-✅ Completed
+`'+UNION+SELECT+NULL,username||'~'||password+FROM+users--`
+
+4. The `||` operator combines the username and password into a single value separated by `~`.
+5. The response reveals the credentials.
+6. Use the `administrator` credentials to log in.
+7. Lab solved.
+
+## 4. Impact
+
+This technique can allow attackers to:
+
+* Extract multiple values through a single output column.
+* Retrieve sensitive credentials.
+* Bypass restrictions caused by incompatible column types.
+
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Prevent user input from modifying SQL syntax.
+* Apply least-privilege database permissions.
+* Protect sensitive credentials with secure password hashing.
+
+## 6. Key Takeaway
+
+**When only one column is suitable for text, multiple database values can be concatenated and extracted through that single column.**
+
