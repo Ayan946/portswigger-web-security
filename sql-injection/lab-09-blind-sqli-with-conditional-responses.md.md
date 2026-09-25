@@ -24,11 +24,17 @@ The `Welcome back` message appears.
 `TrackingId=xyz' AND '1'='2`
 
 The message disappears, confirming that the response can be used as a true/false signal.
+
 4. Confirm the `users` table and `administrator` account exist using conditional queries.
+
 5. Test different password lengths with `LENGTH(password)>N` until the response changes. The password is 20 characters long.
+
 6. Use `SUBSTRING(password,N,1)` with Burp Intruder to test each character position against `a-z` and `0-9`.
+
 7. Use the `Welcome back` response to identify the correct character at each position.
+
 8. Repeat for all positions and use the recovered password to log in as `administrator`.
+
 9. Lab solved.
 
 ## 4. Impact
