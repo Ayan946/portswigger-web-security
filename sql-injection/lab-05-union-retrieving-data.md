@@ -1,42 +1,46 @@
-# Lab 05: SQL Injection UNION Attack – Retrieving Data from Other Tables
+# SQL injection UNION attack, determining the number of columns returned by the query
 
-## Lab Description
-This lab demonstrates a UNION-based SQL injection vulnerability that allows retrieval of data from other database tables.
-The objective is to extract sensitive information by combining the results of the original query with data from another table.
+## 1. Vulnerability
 
-## Vulnerability Type
-- SQL Injection
-- UNION-based Injection
-- Information Disclosure
+**SQL Injection — UNION Column Enumeration**
 
-## Affected Functionality
-- Product listing page with database-driven content
+A UNION-based SQL injection can be used to determine how many columns are returned by the original query.
 
-## Root Cause
-The application directly concatenates user input into a SQL query without parameterization.
-This allows attackers to append UNION SELECT statements and retrieve data from arbitrary tables in the database.
+## 2. Objective
 
-## Exploitation Summary (High Level)
-- The attacker first identifies the correct number of columns and a column capable of displaying text.
-- Using a UNION query, data is selected from another table present in the database.
-- The application renders this data in the response, confirming successful exploitation.
+Determine the number of columns returned by the application's SQL query.
 
-*(Specific payloads are intentionally omitted for responsible and ethical documentation.)*
+## 3. Exploitation
 
-## Impact
-- Exposure of sensitive database information
-- Unauthorized access to internal application data
-- Increased risk of account compromise and data leaks
+1. Intercept the product category request using Burp Suite.
+2. Start a UNION query with one `NULL` value:
 
-## Remediation
-- Use parameterized queries (prepared statements)
-- Restrict database user privileges
-- Validate and sanitize all user inputs
-- Avoid exposing database query results directly in application responses
+`'+UNION+SELECT+NULL--`
 
-## Key Takeaway
-Once a UNION-based SQL injection is possible, attackers can pivot from simple reconnaissance to full data extraction.
-Strong input handling and query parameterization are critical to preventing these attacks.
+3. An error indicates that the number of columns does not match.
+4. Add additional `NULL` values:
 
-## Lab Status
-✅ Completed
+`'+UNION+SELECT+NULL,NULL--`
+
+5. Continue adding columns until the error disappears and additional content is returned.
+6. The number of `NULL` values that works represents the number of columns returned by the original query.
+7. Lab solved.
+
+## 4. Impact
+
+Determining the column count helps an attacker:
+
+* Construct UNION-based SQL injection payloads.
+* Identify suitable locations for retrieving data.
+* Continue database enumeration.
+
+## 5. Remediation
+
+* Use **parameterized queries / prepared statements**.
+* Never concatenate user-controlled input into SQL queries.
+* Apply proper input validation.
+
+## 6. Key Takeaway
+
+**Knowing the number of columns is a fundamental step when constructing a UNION-based SQL injection attack.**
+
